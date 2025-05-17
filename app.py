@@ -46,9 +46,9 @@ def scrape_1688_with_playwright(url):
 
         title = page.title()
         try:
-    description = page.locator("meta[name='description']").get_attribute("content") or ""
+        description = page.locator("meta[name='description']").get_attribute("content") or ""
 except:
-    description = ""
+        description = ""
 
         html = page.content()
 
