@@ -41,17 +41,18 @@ def scrape_1688_with_playwright(url):
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        page.goto(url)
-        page.wait_for_timeout(5000)  # 5秒待機してページ読み込み
+        page.goto(url, timeout=15000, wait_until='load')
+        page.wait_for_timeout(5000)  # 5秒待機
 
         title = page.title()
+
         try:
-            description = page.locator("meta[name='description']").get_attribute("content") or ""
+            meta_tag = page.locator("meta[name='description']")
+            description = meta_tag.first.get_attribute("content") or ""
         except:
             description = ""
 
         html = page.content()
-
         image_urls = list(set(re.findall(r'https://cbu01\\.alicdn\\.com/.*?\\.jpg', html)))
 
         translator = Translator()
@@ -71,10 +72,3 @@ def scrape_1688_with_playwright(url):
 
         browser.close()
         return filename
-
-import os
-
-if __name__ == '__main__':
-    port = int(os.environ.get('PORT', 10000))
-    print(f">>> Starting app on port {port}")
-    app.run(host='0.0.0.0', port=port)
