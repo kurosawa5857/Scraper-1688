@@ -46,9 +46,9 @@ def scrape_1688_with_playwright(url):
 
         title = page.title()
         try:
-        description = page.locator("meta[name='description']").get_attribute("content") or ""
-except:
-        description = ""
+            description = page.locator("meta[name='description']").get_attribute("content") or ""
+        except:
+            description = ""
 
         html = page.content()
 
@@ -71,6 +71,3 @@ except:
 
         browser.close()
         return filename
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80)
