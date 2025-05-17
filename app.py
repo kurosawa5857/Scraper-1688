@@ -42,7 +42,7 @@ def scrape_1688_with_playwright(url):
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         page.goto(url, timeout=15000, wait_until='load')
-        page.wait_for_timeout(5000)  # 5秒待機
+        page.wait_for_timeout(5000)
 
         title = page.title()
 
@@ -72,8 +72,7 @@ def scrape_1688_with_playwright(url):
 
         browser.close()
         return filename
-    
-    if __name__ == '__main__':
+
+if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)
-
