@@ -1,11 +1,9 @@
 from flask import Flask, request, render_template_string, send_file
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
+from playwright.sync_api import sync_playwright
 from googletrans import Translator
 import csv
-import re
 import time
+import re
 import os
 
 app = Flask(__name__)
@@ -13,7 +11,7 @@ app = Flask(__name__)
 HTML_TEMPLATE = """
 <!doctype html>
 <title>Scraper-1688</title>
-<h1>1688 商品情報取得ツール</h1>
+<h1>1688 商品情報取得ツール（Playwright版）</h1>
 <form method=post>
   商品ページのURLを入力してください:<br>
   <input type=text name=url size=100>
@@ -30,7 +28,7 @@ def index():
     if request.method == 'POST':
         url = request.form['url']
         if url:
-            filename = scrape_1688(url)
+            filename = scrape_1688_with_playwright(url)
             if filename:
                 download_url = f"/download/{filename}"
     return render_template_string(HTML_TEMPLATE, download_url=download_url)
@@ -39,27 +37,36 @@ def index():
 def download(filename):
     return send_file(filename, as_attachment=True)
 
-def scrape_1688(url):
-    options = Options()
-    options.add_argument('--headless')
-    driver = webdriver.Chrome(options=options)
-    driver.get(url)
-    time.sleep(5)
+def scrape_1688_with_playwright(url):
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.goto(url)
+        page.wait_for_timeout(5000)  # 5秒待機してページ読み込み
 
-    title = driver.title
-    source = driver.page_source
-    images = re.findall(r'https://cbu01\\.alicdn\\.com/.*?\\.jpg', source)
-    translator = Translator()
-    title_ja = translator.translate(title, src='zh-cn', dest='ja').text
+        title = page.title()
+        description = page.locator("meta[name='description']").get_attribute("content") or ""
+        html = page.content()
 
-    filename = f"1688_output_{int(time.time())}.csv"
-    with open(filename, 'w', newline='', encoding='utf-8-sig') as f:
-        writer = csv.writer(f)
-        writer.writerow(["商品名", "画像URL1", "画像URL2"])
-        writer.writerow([title_ja, images[0] if images else '', images[1] if len(images) > 1 else ''])
+        image_urls = list(set(re.findall(r'https://cbu01\\.alicdn\\.com/.*?\\.jpg', html)))
 
-    driver.quit()
-    return filename
+        translator = Translator()
+        title_ja = translator.translate(title, src='zh-cn', dest='ja').text
+        description_ja = translator.translate(description, src='zh-cn', dest='ja').text
+
+        filename = f"1688_output_{int(time.time())}.csv"
+        with open(filename, 'w', newline='', encoding='utf-8-sig') as f:
+            writer = csv.writer(f)
+            writer.writerow(["商品名", "商品説明", "画像URL1", "画像URL2"])
+            writer.writerow([
+                title_ja,
+                description_ja,
+                image_urls[0] if len(image_urls) > 0 else '',
+                image_urls[1] if len(image_urls) > 1 else ''
+            ])
+
+        browser.close()
+        return filename
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80)
