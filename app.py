@@ -55,9 +55,21 @@ def scrape_1688_with_playwright(url):
         html = page.content()
         image_urls = list(set(re.findall(r'https://cbu01\\.alicdn\\.com/.*?\\.jpg', html)))
 
-        translator = Translator()
-        title_ja = translator.translate(title, src='zh-cn', dest='ja').text
-        description_ja = translator.translate(description, src='zh-cn', dest='ja').text
+       translator = Translator()
+    try:
+        title_ja = translator.translate(title, src='zh-cn', dest='ja').text if title else ''
+    except:
+     title_ja = title
+
+try:
+    description_ja = translator.translate(description, src='zh-cn', dest='ja').text if description else ''
+except:
+    description_ja = description
+
+        try:
+            description_ja = translator.translate(description, src='zh-cn', dest='ja').text if description else ''
+        except:
+            description_ja = description
 
         filename = f"1688_output_{int(time.time())}.csv"
         with open(filename, 'w', newline='', encoding='utf-8-sig') as f:
