@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Chromium（Playwright用ブラウザ）を起動時にインストール
+echo ">>> Installing Chromium..."
 python -m playwright install chromium
 
-# Flaskアプリを起動
+echo ">>> Starting Flask app"
 python app.py
