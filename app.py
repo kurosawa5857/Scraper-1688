@@ -41,7 +41,7 @@ def scrape_1688_with_playwright(url):
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        page.goto(url, timeout=15000, wait_until='load')
+        page.goto(url, timeout=60000, wait_until='domcontentloaded')
         page.wait_for_timeout(5000)
 
         title = page.title()
