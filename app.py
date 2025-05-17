@@ -45,7 +45,11 @@ def scrape_1688_with_playwright(url):
         page.wait_for_timeout(5000)  # 5秒待機してページ読み込み
 
         title = page.title()
-        description = page.locator("meta[name='description']").get_attribute("content") or ""
+        try:
+    description = page.locator("meta[name='description']").get_attribute("content") or ""
+except:
+    description = ""
+
         html = page.content()
 
         image_urls = list(set(re.findall(r'https://cbu01\\.alicdn\\.com/.*?\\.jpg', html)))
