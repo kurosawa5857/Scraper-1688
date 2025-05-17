@@ -1,12 +1,8 @@
-import os
-from flask import Flask
+#!/bin/bash
+# Flask アプリを起動するためのシェルスクリプト
 
-app = Flask(__name__)
+# Playwright のブラウザをインストール（必要なら）
+playwright install
 
-@app.route("/")
-def index():
-    return "Hello, Render!"
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 10000))  # Renderが環境変数でPORTを指定してくる
-    app.run(host="0.0.0.0", port=port)
+# Flask アプリを起動
+python app.py
